@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+crossorigin="anonymous"></script>
+<script src="../static/all.js"> </script>
+
+<title>main page</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@200;300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+* {
+font-family: 'Noto Serif KR', serif;
+}
+.mypic {
+width: 100%;
+height: 300px;
+
+background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("https://p4.wallpaperbetter.com/wallpaper/918/928/924/iu-k-pop-hd-wallpaper-preview.jpg");
+background-position: center 30%;
+background-size: cover;
+
+color: white;
+
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+}
+.mypic > button {
+}
+
+.mypost > button {
+margin-top: 15px;
+}
+
+.mycards {
+width: 95%;
+max-width: 500px;
+margin: auto;
+}
+
+.mycards > .card {
+margin-top: 10px;
+margin-bottom: 10px;
+}
+
+.myarticle {
+  width: 95%;
+  padding-right: 200px;
+  padding-left: 200px;
+  margin-top: 100px;
+
+
+}
+</style>
+<script>
+  $(document).ready(function(){
+    let login_id = sessionStorage.getItem("session_login_id")
+    let temp_html
+
+    if (!login_id) {
+
+      temp_html = `<button onclick="go_login_page()">로그인</button>`
+
+    }else {
+      temp_html = `<button onclick="go_mypage()">마이페이지</button>`
+    }
+      $('#topbar').append(temp_html)
+
+    get_session_id()
+    recommend_blog()
+  });
+
+  function get_session_id(){
+    let login_id = sessionStorage.getItem("session_login_id")
+    if (login_id != null) {
+      $.ajax({
+        type: "POST",
+        url: "/id",
+        data: {'user_id':login_id},
+        success: function (response) {
+          let id = response['id'][0]['id']
+          sessionStorage.setItem('session_id',id)
+        }
+      });
+    } else {
+    }
+  }
+
+  function recommend_blog(){
+    $.ajax({
+      type: "GET",
+      url: "/data",
+      data: {},
+      success: function (response) {
+        let rows = response['recommend_blog_data']
+
+        for (let i = 0; i < rows.length; i++){
+          let id = rows[i]['id']
+          let user_nickname = rows[i]['user_nickname']
+          let sum = rows[i]['sum']
+
+          console.log(id,user_nickname,sum)
+
+          temp_html = `<p><a href="http://192.168.0.128:5000/blog/${id}">${user_nickname}의 블로그</a></p>`
+
+          $('#recommend_blog').append(temp_html)
+        }
+
+      }
+    });
+
+  }
+
+
+
+
+</script>
+</head>
+<body>
+<div class="mypic" id="mypic">
+    <h1>메인 페이지</h1>
+</div>
+<div id="topbar">
+</div>
+
+  <section>
+    <article class="myarticle">
+      <div id="recommend_blog">
+      </div>
+    </article>
+    <div class="menu" id="menu">
+      <div class="team_list" id="team_list">
+      </div>
+    </div>
+  </section>
+
+</body>
+</html>

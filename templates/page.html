@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+crossorigin="anonymous"></script>
+
+<title>page</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@200;300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+* {
+font-family: 'Noto Serif KR', serif;
+}
+.mypic {
+width: 100%;
+height: 300px;
+
+background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("https://p4.wallpaperbetter.com/wallpaper/918/928/924/iu-k-pop-hd-wallpaper-preview.jpg");
+background-position: center 30%;
+background-size: cover;
+
+color: white;
+
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+}
+
+.mypost {
+width: 95%;
+max-width: 500px;
+margin: 20px auto 20px auto;
+
+box-shadow: 0px 0px 3px 0px black;
+padding: 20px;
+}
+
+.mypost > button {
+margin-top: 15px;
+}
+
+.mycards {
+width: 95%;
+max-width: 500px;
+margin: auto;
+}
+
+.mycards > .card {
+margin-top: 10px;
+margin-bottom: 10px;
+}
+
+.myarticle {
+  width: 95%;
+  padding: 20px;
+
+
+}
+
+
+</style>
+<script>
+$(document).ready(function(){
+  let page_url = window.location.href
+  let url_list = page_url.split('/')
+  let post_id = url_list[url_list.length -1]
+
+  get_page_data(post_id)
+
+  show_comment(post_id)
+});
+
+function get_page_data(post_id){
+  $.ajax({
+      type: "GET",
+      url: `/blog/page/${post_id}/data`,
+      data: {},
+      success: function (response) {
+        row = response['page_data'][0]
+        let user_id = row['user_id']
+        let post_title = row['post_title']
+        let post_text = row['post_text']
+        let good_num = row['good']
+
+        if (good_num === null){
+          good_num = 0
+        }
+
+        let temp_post_title = `<h5>${post_title}</h5>`
+        let temp_post_text = `<p>${post_text}</p>`
+        let temp_good_num = `<button type="button" class="btn btn-outline-danger" onclick="good()" id="good_num">좋아요 ${good_num}</button>`
+
+        $('#mypage').append(temp_post_title)
+        $('#post_box').append(temp_post_text)
+        $('#good_num').append(temp_good_num)
+      }
+  });
+}
+function show_comment(post_id){
+  $.ajax({
+      type: "GET",
+      url: `/comment/${post_id}`,
+      data: {},
+      success: function (response) {
+        rows = response['comment']
+        console.log(rows)
+        for (let i = 0; i < rows.length; i++){
+          let comment = rows[i]['comment']
+          let temp_html = `<p>${comment}</p>`
+          $('#mycomment').append(temp_html)
+        }
+      }
+  });
+}
+
+function save_comment(){
+  let page_url = window.location.href
+  let url_list = page_url.split('/')
+
+  let user_id = sessionStorage.getItem('session_login_id')
+  let post_id = url_list[url_list.length -1]
+  let comment = $('#comment').val()
+  let blog_id = sessionStorage.getItem('session_id')
+
+    $.ajax({
+        type: 'POST',
+        url: `/comment/${post_id}`,
+        data: {'id':blog_id ,'user_id':user_id,'comment': comment},
+        success: function (response) {
+            alert(response['msg'])
+            window.location.reload()
+        }
+    })
+}
+
+function good(){
+
+  let page_url = window.location.href
+  let url_list = page_url.split('/')
+  let post_id = url_list[url_list.length -1]
+  console.log(post_id)
+
+  let good = $('#good_num')[0].innerText.split(' ')[1]
+  good = Number(good) + 1
+
+  $.ajax({
+    type: "POST",
+    url: `/blog/good/${post_id}/good`,
+    data: {'post_id':post_id, 'good': good},
+    success: function (response) {
+      window.location.reload()
+
+    }
+  })
+
+
+}
+
+
+
+
+
+
+</script>
+</head>
+<body>
+<div class="mypic" id="mypic">
+</div>
+  <section>
+    <article class="myarticle">
+      <div id="mypage" class="mypage">
+      </div>
+      <div>
+        <hr>
+        <div id="post_box">
+        </div>
+        <hr>
+        <div>
+          <p id="good_num">
+
+          </p>
+        </div>
+
+        <hr>
+        <p>댓글</p>
+      </div>
+      <div class="mycomment" id="mycomment">
+      </div>
+      <div class="comment-box">
+          <div class="form-floating">
+            <textarea  id="comment" class="form-control" placeholder="Leave a comment here" id="floatingTextarea2" style="height: 100px"></textarea>
+            <label for="floatingTextarea2">Comment</label>
+              <button onclick="save_comment()"type="button" class="btn btn-outline-secondary">등록하기</button>
+          </div>
+      </div>
+    </article>
+  </section>
+</body>
+</html>

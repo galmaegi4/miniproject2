@@ -1,0 +1,7 @@
+# created by virtualenv automatically
+!app.py
+.idea/
+Lib/
+Scripts/
+Sripts/
+*cfg
